@@ -1,0 +1,133 @@
+site_name: NeuralForge
+site_description: Experimental AI systems, automation workflows, and futuristic tooling
+site_author: Leandro_f714
+site_url: https://github.com/leandro4979-hub/-neuralforge
+
+# Repository
+repo_name: leandro4979-hub/-neuralforge
+repo_url: https://github.com/leandro4979-hub/-neuralforge
+edit_uri: edit/main/docs/
+
+# Theme
+theme:
+  name: material
+  language: en
+  palette:
+    - scheme: default
+      primary: deep purple
+      accent: teal
+      toggle:
+        icon: material/lightbulb
+        name: Switch to dark mode
+    - scheme: slate
+      primary: deep purple
+      accent: teal
+      toggle:
+        icon: material/lightbulb-outline
+        name: Switch to light mode
+  font:
+    text: Roboto
+    code: Roboto Mono
+  features:
+    - navigation.top
+    - navigation.sections
+    - navigation.indexes
+    - toc.integrate
+    - search.suggest
+    - search.highlight
+  icon:
+    repo: fontawesome/brands/github
+
+# Navigation
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Installation: getting-started/installation.md
+      - Quick Start: getting-started/quick-start.md
+  - API Reference:
+      - Core: api/core.md
+      - ML Utilities: api/ml.md
+      - Data Loaders: api/data-loaders.md
+  - Development:
+      - Contributing: development/contributing.md
+      - Code Style: development/code-style.md
+      - Testing: development/testing.md
+  - About:
+      - License: about/license.md
+      - Changelog: about/changelog.md
+
+# Markdown extensions
+markdown_extensions:
+  - admonition
+  - codehilite:
+      guess_lang: false
+      linenums: true
+  - footnotes
+  - md_in_html
+  - toc:
+      permalink: true
+      baselevel: 1
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.critic
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.magiclink:
+      repo_url_shorthand: true
+      user: leandro4979-hub
+      repo: -neuralforge
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.snippets:
+      auto_append: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+      clickable_checkbox: true
+  - pymdownx.tilde
+
+# Plugins
+plugins:
+  - search:
+      lang: en
+      separator: '[-\s]+'
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            show_root_toc_entry: false
+            show_category_heading: true
+            show_bases: false
+            show_source: true
+            show_if_no_docstring: false
+            group_by_category: true
+            docstring_options:
+              ignore_init_summary: true
+
+# Extra CSS/JS
+extra_css:
+  - css/extra.css
+
+extra_javascript:
+  - js/extra.js
+
+# Copyright
+copyright: Copyright &copy; 2026 Leandro_f714
