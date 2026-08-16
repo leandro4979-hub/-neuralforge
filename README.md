@@ -55,7 +55,7 @@ run()
 import neuralforge
 
 print(neuralforge.__version__)  # "0.1.0"
-print(neuralforge.__author__)   # "Leandro_f714"
+print(neuralforge.__author__)  # "Leandro_f714"
 ```
 
 ## 🛠️ Development

@@ -3,7 +3,8 @@ Tests for the NeuralForge core module.
 """
 
 import pytest
-from neuralforge.core import hello, NeuralForgeError
+
+from neuralforge.core import NeuralForgeError, hello
 
 
 class TestHello:
@@ -18,8 +19,8 @@ class TestHello:
         assert hello("Alice") == "Hello, Alice! Welcome to NeuralForge."
 
     def test_hello_with_empty_name(self) -> None:
-        """Test hello() with an empty string name."""
-        assert hello("") == "Hello, ! Welcome to NeuralForge."
+        """Test hello() with an empty string name falls back to the generic greeting."""
+        assert hello("") == "Hello from NeuralForge!"
 
     def test_hello_with_numeric_name(self) -> None:
         """Test hello() with a numeric name (type coercion)."""

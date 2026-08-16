@@ -13,8 +13,6 @@ Usage:
 import argparse
 import logging
 import sys
-from pathlib import Path
-from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -300,7 +298,9 @@ def main() -> None:
                 rng,
             )
         else:  # classification
-            logger.info(f"Generating classification data with {args.n_samples} samples...")
+            logger.info(
+                f"Generating classification data with {args.n_samples} samples..."
+            )
             X, y = generate_classification_data(
                 args.n_samples,
                 args.n_features,
@@ -336,13 +336,16 @@ def main() -> None:
         if args.task == "classification":
             unique_classes = np.unique(y)
             logger.info(f"  Classes: {len(unique_classes)}")
-            logger.info(f"  Class distribution: {dict(zip(*np.unique(y, return_counts=True)))}")
+            logger.info(
+                f"  Class distribution: {dict(zip(*np.unique(y, return_counts=True)))}"
+            )
         logger.info(f"  Saved to: {output_path}")
 
     except Exception as e:
         logger.error(f"Data generation failed: {e}")
         if args.verbose:
             import traceback
+
             traceback.print_exc()
         sys.exit(1)
 

@@ -12,6 +12,7 @@ Usage:
 """
 
 import argparse
+import importlib.util
 import logging
 import subprocess
 import sys
@@ -84,44 +85,36 @@ Examples:
 
 def check_mkdocs_installed() -> bool:
     """Check if mkdocs is installed."""
-    try:
-        import mkdocs
-        return True
-    except ImportError:
-        return False
+    return importlib.util.find_spec("mkdocs") is not None
 
 
 def check_mkdocs_material_installed() -> bool:
-    """Check if mkdocs-material theme is installed."""
-    try:
-        import mkdocs_themes
-        return True
-    except ImportError:
-        return False
+    """Check if the mkdocs-material theme is installed."""
+    return importlib.util.find_spec("mkdocs_material") is not None
 
 
 def install_mkdocs() -> None:
     """Install mkdocs and required plugins."""
     logger.info("Installing mkdocs and required plugins...")
-    
+
     # Install mkdocs
     subprocess.run(
         [sys.executable, "-m", "pip", "install", "mkdocs"],
         check=True,
     )
-    
+
     # Install material theme
     subprocess.run(
         [sys.executable, "-m", "pip", "install", "mkdocs-material"],
         check=True,
     )
-    
+
     # Install mkdocstrings for API documentation
     subprocess.run(
         [sys.executable, "-m", "pip", "install", "mkdocstrings-python"],
         check=True,
     )
-    
+
     logger.info("mkdocs and plugins installed successfully!")
 
 
@@ -136,22 +129,21 @@ def serve_docs(args: argparse.Namespace) -> None:
         "--dev-addr",
         f"{args.host}:{args.port}",
     ]
-    
+
     if args.livereload:
         cmd.append("--livereload")
-    
+
     if args.open:
         cmd.append("--open")
-    
+
     if args.verbose:
         cmd.append("-v")
-    
+
     logger.info(f"Starting mkdocs server on {args.host}:{args.port}")
     logger.info(f"Command: {' '.join(cmd)}")
-    
+
     try:
-        # Run the command
-        result = subprocess.run(cmd, check=True)
+        subprocess.run(cmd, check=True)
     except subprocess.CalledProcessError as e:
         logger.error(f"Failed to serve documentation: {e}")
         sys.exit(1)
@@ -178,7 +170,7 @@ def main() -> None:
         else:
             logger.error("mkdocs is required to serve documentation")
             sys.exit(1)
-    
+
     # Check if material theme is installed
     if not check_mkdocs_material_installed():
         logger.warning("mkdocs-material theme is not installed")
@@ -186,7 +178,9 @@ def main() -> None:
         if install.lower() == "y":
             install_mkdocs()
         else:
-            logger.warning("Documentation may not render correctly without mkdocs-material")
+            logger.warning(
+                "Documentation may not render correctly without mkdocs-material"
+            )
 
     # Check if mkdocs.yml exists
     mkdocs_yml = Path("mkdocs.yml")

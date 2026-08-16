@@ -49,7 +49,7 @@ from neuralforge.ml import CSVDataLoader
 loader = CSVDataLoader(
     path="data.csv",
     target_column="label",
-    feature_columns=["feature1", "feature2", "feature3"]
+    feature_columns=["feature1", "feature2", "feature3"],
 )
 
 # Load all data at once
@@ -66,7 +66,7 @@ for X_batch, y_batch in loader:
 loader = CSVDataLoader(
     path="data.csv",
     target_column=0,  # First column is target
-    feature_columns=[1, 2, 3]  # Columns 1, 2, 3 are features
+    feature_columns=[1, 2, 3],  # Columns 1, 2, 3 are features
 )
 ```
 
@@ -93,18 +93,13 @@ from neuralforge.ml import SyntheticDataLoader
 
 # Generate classification data
 classification_loader = SyntheticDataLoader(
-    n_samples=1000,
-    n_features=10,
-    n_classes=3,
-    task="classification"
+    n_samples=1000, n_features=10, n_classes=3, task="classification"
 )
 X, y = classification_loader.load()
 
 # Generate regression data
 regression_loader = SyntheticDataLoader(
-    n_samples=1000,
-    n_features=10,
-    task="regression"
+    n_samples=1000, n_features=10, task="regression"
 )
 X, y = regression_loader.load()
 
@@ -159,17 +154,12 @@ from neuralforge.ml import DataLoaderFactory
 
 # Create a synthetic data loader
 loader = DataLoaderFactory.create(
-    loader_type="synthetic",
-    n_samples=1000,
-    n_features=10,
-    task="regression"
+    loader_type="synthetic", n_samples=1000, n_features=10, task="regression"
 )
 
 # Create a CSV data loader
 csv_loader = DataLoaderFactory.create(
-    loader_type="csv",
-    path="data.csv",
-    target_column="label"
+    loader_type="csv", path="data.csv", target_column="label"
 )
 ```
 
@@ -181,11 +171,7 @@ csv_loader = DataLoaderFactory.create(
 from neuralforge.ml import SyntheticDataLoader, train_simple_model
 
 # Create data loader
-loader = SyntheticDataLoader(
-    n_samples=1000,
-    n_features=10,
-    task="regression"
-)
+loader = SyntheticDataLoader(n_samples=1000, n_features=10, task="regression")
 
 # Load all data
 X, y = loader.load()
@@ -200,10 +186,7 @@ model = train_simple_model(X, y, input_size=10, epochs=50)
 from neuralforge.ml import CSVDataLoader
 
 loader = CSVDataLoader(
-    path="large_dataset.csv",
-    target_column="label",
-    batch_size=64,
-    shuffle=True
+    path="large_dataset.csv", target_column="label", batch_size=64, shuffle=True
 )
 
 # Process data in batches
@@ -222,21 +205,26 @@ from neuralforge.ml import BaseDataLoader
 from typing import Tuple, Iterator
 import numpy as np
 
+
 class MyCustomLoader(BaseDataLoader):
     def __init__(self, data: np.ndarray, targets: np.ndarray):
         self.data = data
         self.targets = targets
         self.batch_size = 32
-    
+
     def load(self) -> Tuple[np.ndarray, np.ndarray]:
         return self.data, self.targets
-    
+
     def __len__(self) -> int:
         return len(self.targets)
-    
+
     def __iter__(self) -> Iterator[Tuple[np.ndarray, np.ndarray]]:
         for i in range(0, len(self), self.batch_size):
-            yield self.data[i:i+self.batch_size], self.targets[i:i+self.batch_size]
+            yield (
+                self.data[i : i + self.batch_size],
+                self.targets[i : i + self.batch_size],
+            )
+
 
 # Usage
 loader = MyCustomLoader(X, y)

@@ -60,8 +60,9 @@ Test that NeuralForge is installed correctly:
 
 ```python
 import neuralforge
+
 print(neuralforge.__version__)  # Should print "0.1.0"
-print(neuralforge.hello())       # Should print "Hello from NeuralForge!"
+print(neuralforge.hello())  # Should print "Hello from NeuralForge!"
 ```
 
 ## Development Dependencies

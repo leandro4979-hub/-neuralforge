@@ -110,22 +110,23 @@ Group related tests in classes:
 ```python
 class TestNormalize:
     """Tests for the normalize function."""
-    
+
     def test_basic_normalization(self) -> None:
         """Test basic normalization to [0, 1]."""
         pass
-    
+
     def test_constant_column(self) -> None:
         """Test normalization handles constant columns."""
         pass
 
+
 class TestStandardize:
     """Tests for the standardize function."""
-    
+
     def test_mean_zero(self) -> None:
         """Test standardization results in zero mean."""
         pass
-    
+
     def test_std_one(self) -> None:
         """Test standardization results in unit variance."""
         pass
@@ -142,6 +143,7 @@ class TestStandardize:
 def test_normalize_with_negative_values(self) -> None:
     pass
 
+
 def test_model_forward_pass_shape(self) -> None:
     pass
 ```
@@ -150,6 +152,7 @@ def test_model_forward_pass_shape(self) -> None:
 ```python
 def test1(self) -> None:
     pass
+
 
 def test_normalize(self) -> None:  # Too vague
     pass
@@ -185,6 +188,7 @@ def test_normalize_min_value(self) -> None:
     data = np.array([[1, 2], [3, 4]])
     result = normalize(data)
     assert result.min() == 0.0
+
 
 def test_normalize_max_value(self) -> None:
     """Test that normalized data has maximum value of 1."""
@@ -280,15 +284,18 @@ Use pytest fixtures for test dependencies and setup:
 import pytest
 import numpy as np
 
+
 @pytest.fixture
 def sample_data():
     """Provide sample data for testing."""
     return np.array([[1, 2], [3, 4], [5, 6], [7, 8]])
 
+
 @pytest.fixture
 def simple_model():
     """Provide a simple neural network model."""
     return SimpleNN(input_size=2, hidden_size=4, output_size=1)
+
 
 # Use in tests
 def test_normalize(sample_data):
@@ -297,9 +304,11 @@ def test_normalize(sample_data):
     assert result.min() == 0.0
     assert result.max() == 1.0
 
+
 def test_model_forward(simple_model):
     """Test model forward pass."""
     import torch
+
     x = torch.randn(1, 2)
     output = simple_model(x)
     assert output.shape == (1, 1)
@@ -315,15 +324,18 @@ import pytest
 import numpy as np
 import torch
 
+
 @pytest.fixture
 def rng():
     """Provide a seeded random number generator."""
     return np.random.default_rng(42)
 
+
 @pytest.fixture
 def device():
     """Provide the best available device for testing."""
     return torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
 @pytest.fixture
 def sample_tensor(device):
@@ -341,14 +353,10 @@ def test_csv_loader(mocker):
     # Mock the open function
     mock_open = mocker.mock_open(read_data="a,b,c\n1,2,3\n4,5,6")
     mocker.patch("builtins.open", mock_open)
-    
-    loader = CSVDataLoader(
-        path="dummy.csv",
-        target_column=0,
-        feature_columns=[1, 2]
-    )
+
+    loader = CSVDataLoader(path="dummy.csv", target_column=0, feature_columns=[1, 2])
     X, y = loader.load()
-    
+
     assert X.shape == (2, 2)
     assert y.shape == (2,)
 ```
@@ -360,15 +368,16 @@ For performance-critical code, add performance tests:
 ```python
 import time
 
+
 def test_normalize_performance():
     """Test that normalize runs in acceptable time."""
     # Create large dataset
     data = np.random.randn(10000, 100)
-    
+
     start = time.time()
     result = normalize(data)
     elapsed = time.time() - start
-    
+
     assert elapsed < 0.1  # Should complete in under 100ms
     assert result.shape == data.shape
 ```
@@ -412,7 +421,9 @@ Add breakpoints in tests:
 
 ```python
 def test_something():
-    import pdb; pdb.set_trace()  # Breakpoint
+    import pdb
+
+    pdb.set_trace()  # Breakpoint
     result = some_function()
     assert result == expected
 ```
@@ -547,15 +558,18 @@ def test_large_computation():
     """Test that takes a long time to run."""
     pass
 
+
 @pytest.mark.integration
 def test_full_integration():
     """Integration test."""
     pass
 
+
 @pytest.mark.skip(reason="Not implemented yet")
 def test_future_feature():
     """Test for feature not yet implemented."""
     pass
+
 
 @pytest.mark.xfail
 def test_known_failure():

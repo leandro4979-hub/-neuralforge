@@ -6,7 +6,6 @@ serialization utilities using PyTorch.
 """
 
 from pathlib import Path
-from typing import Optional, Tuple
 
 import numpy as np
 import numpy.typing as npt
@@ -38,12 +37,12 @@ class SimpleNN(nn.Module):
         input_size: int,
         hidden_size: int,
         output_size: int,
-        activation: nn.Module = nn.ReLU(),
+        activation: nn.Module | None = None,
     ) -> None:
         super().__init__()
         self.fc1 = nn.Linear(input_size, hidden_size)
         self.fc2 = nn.Linear(hidden_size, output_size)
-        self.activation = activation
+        self.activation = activation if activation is not None else nn.ReLU()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
@@ -64,9 +63,9 @@ class SimpleNN(nn.Module):
 def save_model(
     model: nn.Module,
     path: str,
-    optimizer: Optional[optim.Optimizer] = None,
-    epoch: Optional[int] = None,
-    loss: Optional[float] = None,
+    optimizer: optim.Optimizer | None = None,
+    epoch: int | None = None,
+    loss: float | None = None,
 ) -> None:
     """
     Save a PyTorch model to disk.
@@ -82,19 +81,19 @@ def save_model(
         >>> model = SimpleNN(10, 5, 2)
         >>> save_model(model, "my_model")
     """
-    checkpoint = {
+    checkpoint: dict[str, object] = {
         "model_state_dict": model.state_dict(),
     }
-    
+
     if optimizer is not None:
         checkpoint["optimizer_state_dict"] = optimizer.state_dict()
-    
+
     if epoch is not None:
         checkpoint["epoch"] = epoch
-    
+
     if loss is not None:
         checkpoint["loss"] = loss
-    
+
     # Save as .pt file
     torch.save(checkpoint, f"{path}.pt")
 
@@ -102,8 +101,8 @@ def save_model(
 def load_model(
     path: str,
     model: nn.Module,
-    optimizer: Optional[optim.Optimizer] = None,
-) -> Tuple[nn.Module, Optional[optim.Optimizer], int, float]:
+    optimizer: optim.Optimizer | None = None,
+) -> tuple[nn.Module, optim.Optimizer | None, int | None, float | None]:
     """
     Load a PyTorch model from disk.
 
@@ -122,20 +121,22 @@ def load_model(
         >>> model, optimizer, epoch, loss = load_model("my_model.pt", model, optimizer)
     """
     # Ensure .pt extension
-    path = Path(path)
-    if not path.suffix:
-        path = path.with_suffix(".pt")
-    
-    checkpoint = torch.load(path)
+    path_obj = Path(path)
+    if not path_obj.suffix:
+        path_obj = path_obj.with_suffix(".pt")
+
+    # weights_only=False because checkpoints may contain optimizer state and
+    # arbitrary metadata written by this module. Only load files from trusted sources.
+    checkpoint = torch.load(path_obj, weights_only=False)
     model.load_state_dict(checkpoint["model_state_dict"])
-    
+
     opt = optimizer
     if optimizer is not None and "optimizer_state_dict" in checkpoint:
         optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
-    
+
     epoch = checkpoint.get("epoch")
     loss = checkpoint.get("loss")
-    
+
     return model, opt, epoch, loss
 
 
@@ -174,34 +175,35 @@ def train_simple_model(
     # Convert numpy arrays to PyTorch tensors
     X_tensor = torch.FloatTensor(X_train)
     y_tensor = torch.FloatTensor(y_train)
-    
+
     # Reshape y if it's 1D
     if y_tensor.dim() == 1:
         y_tensor = y_tensor.unsqueeze(1)
-    
+
     # Create model
     model = SimpleNN(input_size, hidden_size, output_size)
-    
+    model.train()
+
     # Loss and optimizer
     criterion = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-    
+
     # Training loop
     n_samples = X_tensor.shape[0]
-    
-    for epoch in range(epochs):
+
+    for _epoch in range(epochs):
         # Mini-batch training
         for i in range(0, n_samples, batch_size):
-            X_batch = X_tensor[i:i + batch_size]
-            y_batch = y_tensor[i:i + batch_size]
-            
+            X_batch = X_tensor[i : i + batch_size]
+            y_batch = y_tensor[i : i + batch_size]
+
             # Forward pass
             outputs = model(X_batch)
             loss = criterion(outputs, y_batch)
-            
+
             # Backward pass and optimize
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-    
+
     return model

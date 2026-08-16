@@ -75,18 +75,12 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 from neuralforge.ml import SyntheticDataLoader, CSVDataLoader
 
 # Generate synthetic data
-synthetic_loader = SyntheticDataLoader(
-    n_samples=1000,
-    n_features=10,
-    task="regression"
-)
+synthetic_loader = SyntheticDataLoader(n_samples=1000, n_features=10, task="regression")
 X, y = synthetic_loader.load()
 
 # Load from CSV
 csv_loader = CSVDataLoader(
-    path="data.csv",
-    target_column="label",
-    feature_columns=["f1", "f2", "f3"]
+    path="data.csv", target_column="label", feature_columns=["f1", "f2", "f3"]
 )
 X, y = csv_loader.load()
 
@@ -110,12 +104,7 @@ y = X.dot(true_weights).flatten() + 0.1 * np.random.randn(1000)
 
 # Train a model
 trained_model = train_simple_model(
-    X, y,
-    input_size=10,
-    hidden_size=64,
-    output_size=1,
-    epochs=100,
-    learning_rate=0.001
+    X, y, input_size=10, hidden_size=64, output_size=1, epochs=100, learning_rate=0.001
 )
 
 # Make predictions

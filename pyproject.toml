@@ -26,6 +26,7 @@ classifiers = [
 ]
 dependencies = [
     "numpy>=1.24.0",
+    "pandas>=2.0.0",
     "torch>=2.0.0",
 ]
 
@@ -52,6 +53,16 @@ target-version = "py310"
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP"]
 ignore = ["E501"]
+
+# ML convention: feature matrices are conventionally named `X`.
+# Suppress the lowercase-naming rules where that convention is intentional.
+[tool.ruff.lint.per-file-ignores]
+"src/neuralforge/ml/data.py" = ["N803", "N806"]
+"src/neuralforge/ml/models.py" = ["N803", "N806"]
+"src/neuralforge/ml/data_loaders.py" = ["N803", "N806"]
+"scripts/generate_data.py" = ["N803", "N806"]
+"scripts/train_model.py" = ["N803", "N806"]
+"tests/*.py" = ["N803", "N806"]
 
 [tool.mypy]
 python_version = "3.10"
