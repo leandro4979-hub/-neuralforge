@@ -47,6 +47,30 @@ final class DependencyContainer {
         )
     }()
 
+    // MARK: - Phase 4: Scenario Execution
+
+    lazy var actionExecutor: DefaultActionExecutor = {
+        DefaultActionExecutor(simctlClient: simctlClient, logger: logger)
+    }()
+
+    lazy var assertionValidator: DefaultAssertionValidator = {
+        DefaultAssertionValidator(logger: logger)
+    }()
+
+    lazy var scenarioRunner: ScenarioRunner = {
+        ScenarioRunner(
+            actionExecutor: actionExecutor,
+            assertionValidator: assertionValidator,
+            logger: logger,
+            deviceProfileStore: deviceProfileStore,
+            simctlClient: simctlClient
+        )
+    }()
+
+    lazy var executionEventLogger: ExecutionEventLogger = {
+        ExecutionEventLogger(logger: logger)
+    }()
+
     lazy var appCoordinator: AppCoordinator = {
         AppCoordinator(logger: logger)
     }()
