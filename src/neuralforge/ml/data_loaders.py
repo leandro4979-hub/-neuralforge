@@ -6,8 +6,9 @@ various types of datasets for machine learning tasks.
 """
 
 from abc import ABC, abstractmethod
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
+from typing import Any
 
 import numpy as np
 import numpy.typing as npt
@@ -22,7 +23,7 @@ class BaseDataLoader(ABC):
     """
 
     @abstractmethod
-    def load(self) -> Tuple[npt.NDArray[np.floating], npt.NDArray[np.floating]]:
+    def load(self) -> tuple[npt.NDArray[np.floating], npt.NDArray[np.floating]]:
         """
         Load and return the dataset.
 
@@ -37,7 +38,9 @@ class BaseDataLoader(ABC):
         pass
 
     @abstractmethod
-    def __iter__(self) -> Iterator[Tuple[npt.NDArray[np.floating], npt.NDArray[np.floating]]]:
+    def __iter__(
+        self,
+    ) -> Iterator[tuple[npt.NDArray[np.floating], npt.NDArray[np.floating]]]:
         """Iterate over batches of data."""
         pass
 
@@ -54,6 +57,7 @@ class CSVDataLoader(BaseDataLoader):
         skip_header: Whether to skip the header row. Default: True.
         batch_size: Batch size for iteration. Default: 32.
         shuffle: Whether to shuffle data. Default: False.
+        random_state: Random seed for reproducible shuffling. Default: 42.
 
     Example:
         >>> loader = CSVDataLoader(
@@ -66,13 +70,14 @@ class CSVDataLoader(BaseDataLoader):
 
     def __init__(
         self,
-        path: Union[str, Path],
-        target_column: Union[str, int],
-        feature_columns: Optional[List[Union[str, int]]] = None,
+        path: str | Path,
+        target_column: str | int,
+        feature_columns: list[str | int] | None = None,
         delimiter: str = ",",
         skip_header: bool = True,
         batch_size: int = 32,
         shuffle: bool = False,
+        random_state: int = 42,
     ) -> None:
         self.path = Path(path)
         self.target_column = target_column
@@ -81,27 +86,43 @@ class CSVDataLoader(BaseDataLoader):
         self.skip_header = skip_header
         self.batch_size = batch_size
         self.shuffle = shuffle
-        
-        self._data: Optional[Tuple[npt.NDArray[np.floating], npt.NDArray[np.floating]]] = None
-        self._indices: Optional[npt.NDArray[np.int_]] = None
+        self.random_state = random_state
 
-    def load(self) -> Tuple[npt.NDArray[np.floating], npt.NDArray[np.floating]]:
+        self._data: tuple[npt.NDArray[np.floating], npt.NDArray[np.floating]] | None = (
+            None
+        )
+        self._indices: npt.NDArray[np.int_] | None = None
+        self._rng = np.random.default_rng(random_state)
+
+    def load(self) -> tuple[npt.NDArray[np.floating], npt.NDArray[np.floating]]:
         """Load data from CSV file."""
         import csv
-        
-        features: List[List[float]] = []
-        targets: List[float] = []
-        
-        with open(self.path, "r") as f:
+
+        # String column names require a header to resolve to indices.
+        if not self.skip_header and (
+            isinstance(self.target_column, str)
+            or (
+                self.feature_columns is not None
+                and isinstance(self.feature_columns[0], str)
+            )
+        ):
+            raise ValueError(
+                "String column names for target_column/feature_columns "
+                "require skip_header=True to resolve them to indices."
+            )
+
+        features: list[list[float]] = []
+        targets: list[float] = []
+
+        with open(self.path) as f:
             reader = csv.reader(f, delimiter=self.delimiter)
-            
+
             if self.skip_header:
                 header = next(reader)
                 # If feature_columns not specified, use all columns except target
                 if self.feature_columns is None:
                     self.feature_columns = [
-                        i for i, col in enumerate(header) 
-                        if col != self.target_column
+                        i for i, col in enumerate(header) if col != self.target_column
                     ]
                 # Convert column names to indices if needed
                 if isinstance(self.target_column, str):
@@ -110,45 +131,49 @@ class CSVDataLoader(BaseDataLoader):
                     self.feature_columns = [
                         header.index(col) for col in self.feature_columns
                     ]
-            
+
             for row in reader:
                 # Extract features
                 feature_row = [float(row[i]) for i in self.feature_columns]
                 features.append(feature_row)
-                
+
                 # Extract target
                 target = float(row[self.target_column])
                 targets.append(target)
-        
+
         self._data = (np.array(features), np.array(targets))
         self._indices = np.arange(len(targets))
-        
+
         if self.shuffle:
-            np.random.shuffle(self._indices)
-        
+            self._rng.shuffle(self._indices)
+
         return self._data
 
     def __len__(self) -> int:
         """Return number of samples."""
         if self._data is None:
             self.load()
+        assert self._data is not None
         return len(self._data[1])
 
-    def __iter__(self) -> Iterator[Tuple[npt.NDArray[np.floating], npt.NDArray[np.floating]]]:
+    def __iter__(
+        self,
+    ) -> Iterator[tuple[npt.NDArray[np.floating], npt.NDArray[np.floating]]]:
         """Iterate over batches."""
         if self._data is None:
             self.load()
-        
+        assert self._data is not None and self._indices is not None
+
         X, y = self._data
         n_samples = len(y)
-        
+
         # Shuffle indices if needed
         if self.shuffle:
-            self._indices = np.random.permutation(self._indices)
-        
+            self._indices = self._rng.permutation(self._indices)
+
         # Yield batches
         for i in range(0, n_samples, self.batch_size):
-            batch_indices = self._indices[i:i + self.batch_size]
+            batch_indices = self._indices[i : i + self.batch_size]
             yield X[batch_indices], y[batch_indices]
 
 
@@ -186,73 +211,84 @@ class SyntheticDataLoader(BaseDataLoader):
         self.task = task
         self.random_state = random_state
         self.batch_size = batch_size
-        
-        self._rng = np.random.default_rng(random_state)
-        self._data: Optional[Tuple[npt.NDArray[np.floating], npt.NDArray[np.floating]]] = None
-        self._indices: Optional[npt.NDArray[np.int_]] = None
 
-    def load(self) -> Tuple[npt.NDArray[np.floating], npt.NDArray[np.floating]]:
+        self._rng = np.random.default_rng(random_state)
+        self._data: tuple[npt.NDArray[np.floating], npt.NDArray[np.floating]] | None = (
+            None
+        )
+        self._indices: npt.NDArray[np.int_] | None = None
+
+    def load(self) -> tuple[npt.NDArray[np.floating], npt.NDArray[np.floating]]:
         """Generate synthetic data."""
         if self.task == "classification":
             X, y = self._generate_classification_data()
         elif self.task == "regression":
             X, y = self._generate_regression_data()
         else:
-            raise ValueError(f"Unknown task: {self.task}. Use 'classification' or 'regression'.")
-        
+            raise ValueError(
+                f"Unknown task: {self.task}. Use 'classification' or 'regression'."
+            )
+
         self._data = (X, y)
         self._indices = np.arange(self.n_samples)
         return self._data
 
-    def _generate_classification_data(self) -> Tuple[npt.NDArray[np.floating], npt.NDArray[np.floating]]:
+    def _generate_classification_data(
+        self,
+    ) -> tuple[npt.NDArray[np.floating], npt.NDArray[np.floating]]:
         """Generate synthetic classification data."""
         # Generate random features
         X = self._rng.standard_normal((self.n_samples, self.n_features))
-        
+
         # Generate random weights for a linear decision boundary
         weights = self._rng.standard_normal((self.n_features, self.n_classes))
         bias = self._rng.standard_normal(self.n_classes)
-        
+
         # Compute logits
         logits = X @ weights + bias
-        
+
         # Convert to probabilities and then to class labels
         probs = np.exp(logits) / np.sum(np.exp(logits), axis=1, keepdims=True)
         y = np.argmax(probs, axis=1).astype(np.float64)
-        
+
         return X, y
 
-    def _generate_regression_data(self) -> Tuple[npt.NDArray[np.floating], npt.NDArray[np.floating]]:
+    def _generate_regression_data(
+        self,
+    ) -> tuple[npt.NDArray[np.floating], npt.NDArray[np.floating]]:
         """Generate synthetic regression data."""
         # Generate random features
         X = self._rng.standard_normal((self.n_samples, self.n_features))
-        
+
         # Generate random weights for a linear relationship
         weights = self._rng.standard_normal(self.n_features)
         bias = self._rng.standard_normal()
-        
+
         # Compute targets with some noise
         y = X @ weights + bias + 0.1 * self._rng.standard_normal(self.n_samples)
-        
+
         return X, y
 
     def __len__(self) -> int:
         """Return number of samples."""
         return self.n_samples
 
-    def __iter__(self) -> Iterator[Tuple[npt.NDArray[np.floating], npt.NDArray[np.floating]]]:
+    def __iter__(
+        self,
+    ) -> Iterator[tuple[npt.NDArray[np.floating], npt.NDArray[np.floating]]]:
         """Iterate over batches."""
         if self._data is None:
             self.load()
-        
+        assert self._data is not None and self._indices is not None
+
         X, y = self._data
-        
+
         # Shuffle indices
         self._indices = self._rng.permutation(self._indices)
-        
+
         # Yield batches
         for i in range(0, self.n_samples, self.batch_size):
-            batch_indices = self._indices[i:i + self.batch_size]
+            batch_indices = self._indices[i : i + self.batch_size]
             yield X[batch_indices], y[batch_indices]
 
 
@@ -287,12 +323,14 @@ class DataLoaderFactory:
         Returns:
             An instance of the specified data loader.
         """
-        loaders: Dict[str, type] = {
+        loaders: dict[str, type[BaseDataLoader]] = {
             "csv": CSVDataLoader,
             "synthetic": SyntheticDataLoader,
         }
-        
+
         if loader_type not in loaders:
-            raise ValueError(f"Unknown loader type: {loader_type}. Available: {list(loaders.keys())}")
-        
+            raise ValueError(
+                f"Unknown loader type: {loader_type}. Available: {list(loaders.keys())}"
+            )
+
         return loaders[loader_type](**kwargs)

@@ -6,18 +6,17 @@ AI automation framework.
 """
 
 import logging
-from typing import Optional
 
 # Set up module-level logger
 logger = logging.getLogger(__name__)
 
 
-def hello(name: Optional[str] = None) -> str:
+def hello(name: str | None = None) -> str:
     """
     Return a friendly greeting from NeuralForge.
 
     Args:
-        name: Optional name to greet. If None, returns a generic greeting.
+        name: Optional name to greet. If None or empty, returns a generic greeting.
 
     Returns:
         A greeting string.

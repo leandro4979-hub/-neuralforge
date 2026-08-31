@@ -45,6 +45,7 @@ model = train_simple_model(X, y, input_size=10, epochs=50)
 # Make predictions
 X_test = np.random.randn(5, 10)
 import torch
+
 with torch.no_grad():
     predictions = model(torch.FloatTensor(X_test))
 ```

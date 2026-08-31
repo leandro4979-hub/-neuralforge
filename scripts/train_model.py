@@ -14,23 +14,18 @@ Usage:
 import argparse
 import logging
 import sys
-from pathlib import Path
-from typing import Optional
 
 import numpy as np
 import torch
 
-# Add parent directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
-from src.neuralforge.ml import (
+from neuralforge.ml import (
     CSVDataLoader,
-    SyntheticDataLoader,
     SimpleNN,
-    save_model,
-    train_simple_model,
+    SyntheticDataLoader,
     normalize,
+    save_model,
     standardize,
+    train_simple_model,
 )
 
 # Set up logging
@@ -292,17 +287,16 @@ def evaluate_model(
     """Evaluate the trained model."""
     logger.info("Evaluating model...")
 
-    import torch
     with torch.no_grad():
         X_tensor = torch.FloatTensor(X)
         y_tensor = torch.FloatTensor(y)
-        
+
         # Reshape y if needed
         if y_tensor.dim() == 1:
             y_tensor = y_tensor.unsqueeze(1)
-        
+
         predictions = model(X_tensor)
-        
+
         if args.task == "regression":
             # Calculate MSE
             mse = torch.nn.functional.mse_loss(predictions, y_tensor).item()
@@ -310,7 +304,11 @@ def evaluate_model(
         else:
             # Calculate accuracy for classification
             predicted_classes = torch.argmax(predictions, dim=1)
-            actual_classes = torch.argmax(y_tensor, dim=1) if y_tensor.shape[1] > 1 else y_tensor.squeeze()
+            actual_classes = (
+                torch.argmax(y_tensor, dim=1)
+                if y_tensor.shape[1] > 1
+                else y_tensor.squeeze()
+            )
             accuracy = (predicted_classes == actual_classes).float().mean().item()
             logger.info(f"Accuracy: {accuracy * 100:.2f}%")
 
@@ -347,6 +345,7 @@ def main() -> None:
         logger.error(f"Training failed: {e}")
         if args.verbose:
             import traceback
+
             traceback.print_exc()
         sys.exit(1)
 

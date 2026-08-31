@@ -4,8 +4,6 @@ Data preprocessing utilities for machine learning.
 This module provides common data preprocessing functions for ML workflows.
 """
 
-from typing import Tuple
-
 import numpy as np
 import numpy.typing as npt
 
@@ -34,10 +32,10 @@ def normalize(
     min_vals = data.min(axis=axis, keepdims=True)
     max_vals = data.max(axis=axis, keepdims=True)
     range_vals = max_vals - min_vals
-    
+
     # Avoid division by zero for constant columns
     range_vals[range_vals == 0] = 1.0
-    
+
     return (data - min_vals) / range_vals
 
 
@@ -64,10 +62,10 @@ def standardize(
     """
     mean = data.mean(axis=axis, keepdims=True)
     std = data.std(axis=axis, keepdims=True)
-    
+
     # Avoid division by zero for constant columns
     std[std == 0] = 1.0
-    
+
     return (data - mean) / std
 
 
@@ -76,8 +74,12 @@ def train_test_split(
     y: npt.NDArray[np.floating],
     test_size: float = 0.2,
     random_state: int = 42,
-) -> Tuple[npt.NDArray[np.floating], npt.NDArray[np.floating], 
-            npt.NDArray[np.floating], npt.NDArray[np.floating]]:
+) -> tuple[
+    npt.NDArray[np.floating],
+    npt.NDArray[np.floating],
+    npt.NDArray[np.floating],
+    npt.NDArray[np.floating],
+]:
     """
     Split data into training and test sets.
 
@@ -98,16 +100,22 @@ def train_test_split(
     """
     if not 0 < test_size < 1:
         raise ValueError("test_size must be between 0 and 1")
-    
+
+    if X.shape[0] != y.shape[0]:
+        raise ValueError(
+            f"X and y must have the same number of samples: "
+            f"got {X.shape[0]} and {y.shape[0]}"
+        )
+
     rng = np.random.default_rng(random_state)
     n_samples = X.shape[0]
     n_test = int(n_samples * test_size)
-    
+
     # Generate random indices
     indices = rng.permutation(n_samples)
     test_indices = indices[:n_test]
     train_indices = indices[n_test:]
-    
+
     return (
         X[train_indices],
         X[test_indices],

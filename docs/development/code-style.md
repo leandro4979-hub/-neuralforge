@@ -46,6 +46,7 @@ Always use type hints for better code clarity and IDE support:
 def greet(name: str, times: int = 1) -> str:
     return f"Hello, {name}! " * times
 
+
 def process_data(data: List[float], normalize: bool = False) -> Tuple[float, float]:
     if normalize:
         data = [x / max(data) for x in data]
@@ -110,6 +111,7 @@ class SimpleNN(nn.Module):
         >>> x = torch.randn(32, 10)
         >>> output = model(x)
     """
+
     pass
 ```
 
@@ -157,22 +159,23 @@ Group related tests together in test classes:
 ```python
 class TestNormalize:
     """Tests for the normalize function."""
-    
+
     def test_with_positive_values(self) -> None:
         pass
-    
+
     def test_with_negative_values(self) -> None:
         pass
-    
+
     def test_with_constant_column(self) -> None:
         pass
 
+
 class TestStandardize:
     """Tests for the standardize function."""
-    
+
     def test_mean_zero(self) -> None:
         pass
-    
+
     def test_std_one(self) -> None:
         pass
 ```
@@ -201,21 +204,25 @@ Use pytest fixtures for test dependencies:
 ```python
 import pytest
 
+
 @pytest.fixture
 def sample_data():
     """Provide sample data for testing."""
     return np.array([[1, 2], [3, 4], [5, 6]])
+
 
 @pytest.fixture
 def simple_model():
     """Provide a simple model for testing."""
     return SimpleNN(input_size=2, hidden_size=4, output_size=1)
 
+
 def test_normalize(sample_data):
     """Test normalize with sample data."""
     result = normalize(sample_data)
     assert result.min() == 0.0
     assert result.max() == 1.0
+
 
 def test_model_forward(simple_model):
     """Test model forward pass."""
@@ -276,10 +283,8 @@ from neuralforge.ml import normalize, SimpleNN
 
 **Good:**
 ```python
-result = (
-    some_long_function_name(
-        arg1, arg2, arg3
-    ) + another_long_function_name(arg4, arg5)
+result = some_long_function_name(arg1, arg2, arg3) + another_long_function_name(
+    arg4, arg5
 )
 ```
 
@@ -302,6 +307,7 @@ with open(path, mode) as file:
 def function(a: int, b: int) -> int:
     return a + b
 
+
 class MyClass:
     def method(self, x: float) -> float:
         return x * 2
@@ -309,12 +315,13 @@ class MyClass:
 
 **Bad:**
 ```python
-def function( a , b ) :
-    return a+b
+def function(a, b):
+    return a + b
 
-class MyClass :
-    def method( self , x ) :
-        return x*2
+
+class MyClass:
+    def method(self, x):
+        return x * 2
 ```
 
 ## 🔧 Error Handling
@@ -349,8 +356,7 @@ if test_size <= 0 or test_size >= 1:
 **Good:**
 ```python
 raise ValueError(
-    f"Expected array with shape ({expected_shape}), "
-    f"but got shape ({actual_shape})"
+    f"Expected array with shape ({expected_shape}), but got shape ({actual_shape})"
 )
 ```
 
